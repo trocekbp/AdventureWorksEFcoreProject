@@ -14,6 +14,14 @@ namespace AdventureWorks.Repositories
             _context = context;
         }
 
+
+        public IEnumerable<ProductCategory> GetCategoriesAndSubCategories()
+        {
+            Logger.LogOperation("Pobrano listę subkategorii i  kategorii.");
+            return _context.ProductCategories
+                    .Include(sc => sc.ProductSubcategories);
+        }
+
         public IEnumerable<string> GetCategoryNames()
         {
             Logger.LogOperation("Pobrano listę nazw kategorii.");

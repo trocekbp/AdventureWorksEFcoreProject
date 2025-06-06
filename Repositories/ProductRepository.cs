@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AdventureWorks.Models;
+using AdventureWorks.Models.DTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace AdventureWorks.Repositories
@@ -38,6 +39,7 @@ namespace AdventureWorks.Repositories
                 .Where(p => p.ProductSubcategory != null && p.ProductSubcategory.ProductCategory.Name == categoryName)
                 .ToList();
         }
+
     }
 
 }

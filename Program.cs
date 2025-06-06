@@ -1,6 +1,6 @@
 ﻿using System;
 using AdventureWorks.Models;
-using AdventureWorks.Models;
+using AdventureWorks.Models.DTO;
 using AdventureWorks.Repositories;
 using AdventureWorks.Services;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +11,7 @@ namespace AdventureWorks
 {
     class Program
     {
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             using var context = new AdventureWorksContext();
 
@@ -36,6 +36,32 @@ namespace AdventureWorks
             var customerService = new CustomerService(context);
             var orderService = new OrderService(context);
             var productService = new ProductService(context);
+
+            //TEST REJESTRACJI PRODUKTU
+            // 4) Przygotowanie DTO i wywołanie metody:
+            var newProductDto = new ProductDTO
+            {
+                Name = "Produkt bez DI2",
+                MakeFlag = true,
+                FinishedGoodsFlag = true,
+                SafetyStockLevel = 10,
+                ListPrice = 29.99m,
+                ProductSubcategoryID = 1,   // zakładamy, że taka podkategoria istnieje
+                ProductCategoryID = 1
+            };
+
+            try
+            {
+                var newProductId = await productService.RegisterProduct(newProductDto);
+                Console.WriteLine($"Pomyślnie zarejestrowano nowy produkt. ID: {newProductId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Błąd: {ex.Message}");
+            }
+
+
+
             while (true)
             {   
                 Console.WriteLine("\n=== AdventureWorks Menu ===");
