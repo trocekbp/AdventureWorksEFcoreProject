@@ -17,13 +17,20 @@ namespace AdventureWorks.Repositories
 
         public Product? GetProductById(int productId)
         {
-            var product = _context.Products.FirstOrDefault(p => p.ProductID == productId);
+            var product = _context.Products
+                .FirstOrDefault(p => p.ProductID == productId);
             Logger.LogOperation(product != null
                 ? $"Pobrano produkt o ID {productId}."
                 : $"Nie znaleziono produktu o ID {productId}.");
+
+            if (product == null)
+            {
+                throw new DbUpdateException("Niepowodzenie, nie ma produktu o takim id ! ");
+
+            }
+
             return product;
         }
-
         public IEnumerable<Product> GetProducts()
         {
             Logger.LogOperation("Pobrano listę wszystkich produktów.");

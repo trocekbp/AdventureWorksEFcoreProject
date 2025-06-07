@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
 using AdventureWorks.Models;
@@ -39,8 +40,9 @@ namespace AdventureWorks
             var orderService = new OrderService(context);
             var productService = new ProductService(context);
             var categoryService = new CategoryService(context);
+            var inventoryService = new ProductInventoryService(context);
 
-   
+
             while (true)
             {
                 Console.WriteLine("\n=== AdventureWorks Menu ===");
@@ -129,7 +131,7 @@ namespace AdventureWorks
                         short safetyStock;
                         Console.Write("Podaj minimalną ilość: ");
                         var input = Console.ReadLine();
-                        if (!short.TryParse(input, out safetyStock) || safetyStock <=0 )
+                        if (!short.TryParse(input, out safetyStock) || safetyStock <= 0)
                         {
                             Console.WriteLine("Błąd konwersji, ustawiam 1.");
                             safetyStock = 1;
@@ -191,11 +193,29 @@ namespace AdventureWorks
                             Console.WriteLine($"Błąd: {ex.Message}");
                         }
 
-                      
-                      
+
+
                         break;
                     case "4":
-                    //Zarządzanie stanami magazynowymi
+                        //Zarządzanie stanami magazynowymi
+                        Console.Write("Podaj ID produktu: ");
+                        if (int.TryParse(Console.ReadLine(), out int productIdQty))
+                        {
+                            try
+                            {
+                                inventoryService.EditQuantity(productIdQty);
+                                Console.WriteLine("\n ==Nowa ilość produkty na stanie== ");
+                                inventoryService.ShowProductQuantity(productIdQty);
+
+                            }catch (DbUpdateException ex)
+                            {
+                                Console.WriteLine($"Błąd: {ex.Message}");
+                                if (ex.InnerException != null)
+                                    Console.WriteLine($"Szczegóły: {ex.InnerException.Message}");
+                            }
+                        }
+                        break;
+                        break;
                     case "5":
                         orderService.ShowOrdersList();
                         break;
@@ -247,6 +267,32 @@ namespace AdventureWorks
                                 Console.WriteLine($"Szczegóły: {ex.InnerException.Message}");
                         }
 
+                        break;
+                    case "8":
+                        Console.Write("Podaj ID zamówienia do cofnięcia: ");
+
+                        if (int.TryParse(Console.ReadLine(), out int orderToDelID))
+                        {
+                            orderService.ShowOrderById(orderToDelID);
+                        }
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("Czy na pewno chcesz cofnąć zamówienie ? T/N: ");
+                        Console.ResetColor();
+                        var response = Console.ReadLine();
+
+                        if (response?.Equals("T", StringComparison.OrdinalIgnoreCase) == true)//bez znaczenia wielkości litery                                                                    
+                        {
+                            orderService.DeleteOrder(orderToDelID);
+                        }
+                        else if (response?.Equals("N", StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            //nie usuwanie zamówienia
+                            break;
+                        }
+                        else {
+                            Console.Write("Nieprawidłowa opcja");
+                        }
+                            break;
                         break;
                     case "9":
                         var report = orderRepo.GetSalesReportByCategory();

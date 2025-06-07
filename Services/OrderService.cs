@@ -1,6 +1,8 @@
 ﻿using AdventureWorks;
 using AdventureWorks.Models;
 using AdventureWorks.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,7 +89,7 @@ namespace AdventureWorks.Services
             Console.WriteLine($"Dodano nowe zamówienie. ID zamówienia: {newOrder.SalesOrderID}");
             Console.ForegroundColor = ConsoleColor.Cyan;
 
-
+      
             if (newOrder != null)
             {
                 Console.WriteLine($"Numer: {newOrder.SalesOrderNumber}, Data: {newOrder.OrderDate}, Wartość: {newOrder.SubTotal}, Podatek: {newOrder.TaxAmt}, Metoda Dostawy: {newOrder.ShipMethod.Name},  Data dostawy: {newOrder.ShipDate}, ");
@@ -105,6 +107,26 @@ namespace AdventureWorks.Services
                 Console.WriteLine("Błąd w tworzeniu zamówienia.");
             }
             Console.ResetColor();
+
+        }
+        public void DeleteOrder(int orderID)
+        {
+            try
+            {
+                var order = orderRepo.GetOrderHeader(orderID);
+
+                orderRepo.DeleteOrder(order);
+                
+                Logger.LogOperation($"Usunięto zamówienie o ID {orderID} wraz z {order.SalesOrderDetails.Count} pozycjami.");
+                Console.BackgroundColor = ConsoleColor.Red;
+                Console.Write($"Usunięto zamówienie o ID {orderID} wraz z {order.SalesOrderDetails.Count} pozycjami. \n");
+                Console.ResetColor();
+            }
+            catch(DbUpdateException ex) {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.Message);  // np. "Zamówienie o ID 123 nie istnieje."
+                Console.ResetColor();
+            };
 
         }
 

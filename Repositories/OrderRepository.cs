@@ -58,5 +58,36 @@ namespace AdventureWorks.Repositories
             Logger.LogOperation("Wygenerowano raport sprzedaży według kategorii.");
             return report;
         }
+
+        public SalesOrderHeader GetOrderHeader(int ID) {
+
+            var order = _context.SalesOrderHeaders
+                                .Include(od => od.SalesOrderDetails)
+                                .FirstOrDefault(o => o.SalesOrderID == ID);
+          
+            return order;
+        }
+        public void DeleteOrder(SalesOrderHeader order) {
+
+            _context.SalesOrderHeaders.Remove(order);
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+            {
+
+                Console.WriteLine("Błąd zapisu do bazy: " + ex.Message);
+
+                // Jeśli istnieje warstwa wewnętrznego wyjątku, wypisz jego treść:
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine("Szczegóły wewnętrznego wyjątku: " +
+                                      ex.InnerException.Message);
+                }
+            }
+
+        }
     }
 }
