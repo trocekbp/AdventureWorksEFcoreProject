@@ -14,7 +14,7 @@ namespace AdventureWorks.Repositories
             _context = context;
         }
 
-
+        
         public IEnumerable<ProductCategory> GetCategoriesAndSubCategories()
         {
             Logger.LogOperation("Pobrano listę subkategorii i  kategorii.");

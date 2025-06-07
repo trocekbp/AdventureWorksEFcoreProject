@@ -20,6 +20,21 @@ namespace AdventureWorks.Services
             _context = context;
             this.productRepo = new ProductRepository(_context);
         }
+        public void ShowProductById(int productId) {
+
+            var product = productRepo.GetProductById(productId);
+
+            if (product == null)
+                throw new Exception("Nie ma produktu o podanym ID");
+            else {
+                Console.WriteLine($"Nazwa: {product.Name}");
+                Console.WriteLine($"Numer: {product.ProductNumber}");
+                Console.WriteLine($"Podkategoria: {product.ProductSubcategory?.Name ?? "brak"}");
+                Console.WriteLine($"Minimalna ilość sztuk na magazynie: {product.SafetyStockLevel}");
+                Console.WriteLine($"Bezpieczna ilość sztuk na magazynie: {product.ReorderPoint}");
+                Console.WriteLine($"Cena: {product.ListPrice}");
+            }
+        }
 
         public async Task<int> RegisterProduct(ProductDTO dto) {
 
@@ -32,7 +47,7 @@ namespace AdventureWorks.Services
             else if (string.IsNullOrWhiteSpace(dto.ProductNumber))
             {
                 var number = await _context.Database
-                    .SqlQuery<string>($"SELECT dbo.GenerateProductCode({dto.Name}) AS Value")
+                    .SqlQuery<string>($"SELECT dbo.GenerateProductCode({dto.Name}) AS Value") //generowanie kodu produktu
                     .FirstAsync();
                 dto.ProductNumber = number;
             }
@@ -52,23 +67,15 @@ namespace AdventureWorks.Services
                 SellStartDate = DateTime.Now
             };
 
-                  // Jeżeli chcemy wymusić powiązanie z kategorią, możemy:
-            if (dto.ProductCategoryID.HasValue)
-            {
-                // Zakładamy, że istnieje ProductSubcategory, a on ma powiązaną kategorię.
-                // W modelu AdventureWorks tabela ProductSubcategory zawiera klucz obcy do ProductCategory.
-                var subcat = await _context.ProductSubcategories
-                    .FirstOrDefaultAsync(ps => ps.ProductSubcategoryID == dto.ProductSubcategoryID);
-
-                if (subcat == null)
-                    throw new InvalidOperationException($"Nie ma podkategorii o ID = {dto.ProductSubcategoryID.Value}.");
-
-
-                product.ProductSubcategoryID = dto.ProductCategoryID;
-            }
+             
 
             // Dodajemy do kontekstu i zapisujemy:
             _context.Products.Add(product);
+            _context.SpecialOfferProducts.Add(new SpecialOfferProduct   //Obowiązkowe dodanie do tabeli nowego produktu i ustawienie braku zniżki.
+            {
+                ProductID = product.ProductID,
+                SpecialOfferID = 1
+            });
             try
             {
                 await _context.SaveChangesAsync();
@@ -126,8 +133,8 @@ namespace AdventureWorks.Services
                                 ProductID = id,
                                 OrderQty = quantity,
                                 UnitPrice = product.ListPrice,
+                                UnitPriceDiscount = 0m,
                                 SpecialOfferID = 1
-
                             });
                         }
                     }
