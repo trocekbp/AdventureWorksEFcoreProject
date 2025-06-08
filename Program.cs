@@ -119,7 +119,6 @@ namespace AdventureWorks
                             productService.ShowProductById(productId);
                         }
                         break;
-                        break;
                     case "3":
                         // Rejestracja nowego produktu
 
@@ -129,22 +128,22 @@ namespace AdventureWorks
                         Console.Write("Podaj numer produktu (pomiń w celu wygenerowania automatycznie): ");
                         var number = Console.ReadLine();
 
-                        short safetyStock;
+                        short reorderPoint;
                         Console.Write("Podaj minimalną ilość: ");
                         var input = Console.ReadLine();
-                        if (!short.TryParse(input, out safetyStock) || safetyStock <= 0)
+                        if (!short.TryParse(input, out reorderPoint) || reorderPoint <= 0)
                         {
                             Console.WriteLine("Błąd konwersji, ustawiam 1.");
-                            safetyStock = 1;
+                            reorderPoint = 1;
                         }
 
                         Console.Write("Podaj bezpieczną ilość: "); //podajemy  ilość dla której trzeba zrobić nowe zaówienie, nie jest to safetyStockLevel
-                        short reorderPoint;
+                        short safetyStock;
                         input = Console.ReadLine();
-                        if (!short.TryParse(input, out reorderPoint) || reorderPoint < safetyStock)
+                        if (!short.TryParse(input, out safetyStock) || safetyStock > reorderPoint)
                         {
-                            Console.WriteLine("Błąd konwersji, ustawiam 2.");
-                            reorderPoint = 2;
+                            Console.WriteLine("Błąd konwersji, ustawiam 5.");
+                            safetyStock = 5;
                         }
 
                         Console.Write("Podaj cenę (z przecinkiem)");

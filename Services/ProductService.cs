@@ -71,6 +71,22 @@ namespace AdventureWorks.Services
 
             // Dodajemy do kontekstu i zapisujemy:
             _context.Products.Add(product);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) {
+
+                Console.WriteLine("Błąd zapisu do bazy: " + ex.Message);
+
+                // Jeśli istnieje warstwa wewnętrznego wyjątku, wypisz jego treść:
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine("Szczegóły wewnętrznego wyjątku: " +
+                                      ex.InnerException.Message);
+                }
+                return -1;
+            }
             _context.SpecialOfferProducts.Add(new SpecialOfferProduct   //Obowiązkowe dodanie do tabeli nowego produktu i ustawienie braku zniżki.
             {
                 ProductID = product.ProductID,
@@ -80,7 +96,8 @@ namespace AdventureWorks.Services
             {
                 await _context.SaveChangesAsync();
             }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) {
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+            {
 
                 Console.WriteLine("Błąd zapisu do bazy: " + ex.Message);
 

@@ -47,6 +47,11 @@ namespace AdventureWorks.Repositories
                 .Include(d => d.Product)
                     .ThenInclude(p => p.ProductSubcategory)
                     .ThenInclude(sc => sc.ProductCategory)
+                 .Where(d =>
+                    d.Product.ProductSubcategory != null &&
+                    d.Product.ProductSubcategory.ProductCategory != null &&
+                    !string.IsNullOrEmpty(d.Product.ProductSubcategory.ProductCategory.Name)
+                )
                 .GroupBy(d => d.Product.ProductSubcategory.ProductCategory.Name)
                 .Select(g => new
                 {
