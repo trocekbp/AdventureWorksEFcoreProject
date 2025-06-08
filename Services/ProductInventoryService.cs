@@ -1,5 +1,7 @@
 ﻿using AdventureWorks.Models;
+using AdventureWorks.Models.DTO;
 using AdventureWorks.Repositories;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -83,5 +85,57 @@ namespace AdventureWorks.Services
             }
             Console.ResetColor();
         }
+
+        public async Task CriticalStockReportAsync()
+        {
+            {
+
+                /*
+                 SELECT p.ProductID, p.ReorderPoint, SUM(i.Quantity) as TotalQuantity FROM 
+                    Production.ProductInventory i
+                    join Production.Product p on i.ProductID = p.ProductID
+                    GROUP BY p.ProductID, p.ReorderPoint
+                    HAVING sum(i.Quantity) < p.ReorderPoint;
+                 */
+                try
+                {
+                    var critStock = _context.CriticalStocks
+                                        .FromSqlRaw($"SELECT * FROM CriticalStockView"); //pobranie raportu z widoku
+
+                    Console.ForegroundColor = ConsoleColor.Black;
+                    Console.BackgroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine("==Produkty ze stanem poniżej progu ponownego zamówienia==");
+                    Console.BackgroundColor = ConsoleColor.Yellow;              
+                    foreach (var item in critStock)
+                    {
+                       
+                        Console.WriteLine($"{item.ProductID} | {item.Name} | Próg minimalnego stanu / aktualny stan: {item.ReorderPoint} / {item.TotalQuantity} BRAKUJE: {item.ReorderPoint - item.TotalQuantity}");
+
+                    }
+                    Console.ResetColor();
+                }
+                catch (SqlException sqlEx)
+                {
+                    // wyjątki z warstwy sterownika ADO.NET (np. błąd składni, timeout)
+                    Console.Error.WriteLine("[SQL ERROR] Kod: {0}, Wiadomość: {1}", sqlEx.Number, sqlEx.Message);
+                    if (sqlEx.InnerException != null)
+                        Console.Error.WriteLine("[INNER] " + sqlEx.InnerException.Message);
+                }
+                catch (System.InvalidCastException ex)
+                {
+                    Console.Error.WriteLine(ex.Message);
+                    if(ex.InnerException != null)
+                        Console.Error.WriteLine(ex.InnerException.Message);
+
+                }
+       
+            }
+        }
     }
 }
+
+
+//TO DO:
+// w menu wyświelanie stanów magazynowych dla produktu
+// dodawanie ilości dla danego produktu
+// raport ilościowy

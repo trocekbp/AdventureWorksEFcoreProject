@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using AdventureWorks.Models.DTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace AdventureWorks.Models;
@@ -192,6 +193,8 @@ public partial class AdventureWorksContext : DbContext
     public virtual DbSet<vVendorWithAddress> vVendorWithAddresses { get; set; }
 
     public virtual DbSet<vVendorWithContact> vVendorWithContacts { get; set; }
+
+    public  virtual DbSet<CriticalStockViewDTO> CriticalStocks { get; set; } //w celu pobrania raportu stanów magazynpwych
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -2948,6 +2951,14 @@ public partial class AdventureWorksContext : DbContext
             entity.Property(e => e.Suffix).HasMaxLength(10);
             entity.Property(e => e.Title).HasMaxLength(8);
         });
+        //#CRITICAL STOCK#
+        // oznaczamy, że to zapytanie‐tylko (bez klucza, bez tabeli/view)
+        modelBuilder
+          .Entity<CriticalStockViewDTO>()
+          .HasNoKey()
+          .ToView(null);
+
+        base.OnModelCreating(modelBuilder);
 
         OnModelCreatingPartial(modelBuilder);
     }

@@ -42,7 +42,6 @@ namespace AdventureWorks
             var categoryService = new CategoryService(context);
             var inventoryService = new ProductInventoryService(context);
 
-
             while (true)
             {
                 Console.WriteLine("\n=== AdventureWorks Menu ===");
@@ -58,19 +57,21 @@ namespace AdventureWorks
                 Console.ForegroundColor = ConsoleColor.DarkBlue;
                 Console.WriteLine("Zarządzanie stanami magazynowymi");
                 Console.ResetColor();
-                Console.WriteLine("4. Zmień stan magazynowy produktu");
+                Console.WriteLine("4. Wyświetl stan magazynowy produktu");
+                Console.WriteLine("5. Zmień stan magazynowy produktu");
+                Console.WriteLine("6. Pokaż raport brakujących produktów w magazynach");
 
                 Console.ForegroundColor = ConsoleColor.DarkBlue;
                 Console.WriteLine("Zarządzanie zamówieniami");
                 Console.ResetColor();
-                Console.WriteLine("5. Wyświetl zamówienia");
-                Console.WriteLine("6. Szczegóły zamówienia");
-                Console.WriteLine("7. Dodaj nowe zamówienie");
-                Console.WriteLine("8. Cofnij zamówienie");
+                Console.WriteLine("7. Wyświetl zamówienia");
+                Console.WriteLine("8. Szczegóły zamówienia");
+                Console.WriteLine("9. Dodaj nowe zamówienie");
+                Console.WriteLine("10. Cofnij zamówienie");
 
 
-                Console.WriteLine("9. Generuj raport sprzedaży");
-                Console.WriteLine("10. Wyjście");
+                Console.WriteLine("11. Generuj raport sprzedaży");
+                Console.WriteLine("12. Wyjście");
                 Console.Write("Wybierz opcję: ");
                 var choice = Console.ReadLine();
 
@@ -197,6 +198,26 @@ namespace AdventureWorks
 
                         break;
                     case "4":
+                        //Wyświetl stan magazynowy produktu
+                        //Zarządzanie stanami magazynowymi
+                        Console.Write("Podaj ID produktu: ");
+                        if (int.TryParse(Console.ReadLine(), out int productIdStk))
+                        {
+                            try
+                            {
+                                Console.WriteLine("\n ==Ilość produkty w magazynach== ");
+                                inventoryService.ShowProductQuantity(productIdStk);
+
+                            }
+                            catch (DbUpdateException ex)
+                            {
+                                Console.WriteLine($"Błąd: {ex.Message}");
+                                if (ex.InnerException != null)
+                                    Console.WriteLine($"Szczegóły: {ex.InnerException.Message}");
+                            }
+                        }
+                        break;
+                    case "5":
                         //Zarządzanie stanami magazynowymi
                         Console.Write("Podaj ID produktu: ");
                         if (int.TryParse(Console.ReadLine(), out int productIdQty))
@@ -215,18 +236,36 @@ namespace AdventureWorks
                             }
                         }
                         break;
+                    case "6":
+                        //Zarządzanie ze stanami poniżej minimalnego progu
+                        try
+                        {
+                            await inventoryService.CriticalStockReportAsync();
+                        }
+                        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+                        {
+
+                            Console.WriteLine("Błąd : " + ex.Message);
+
+                            // Jeśli istnieje warstwa wewnętrznego wyjątku, wypisz jego treść:
+                            if (ex.InnerException != null)
+                            {
+                                Console.WriteLine("Szczegóły wewnętrznego wyjątku: " +
+                                                  ex.InnerException.Message);
+                            }
+                        }
                         break;
-                    case "5":
+                    case "7":
                         orderService.ShowOrdersList();
                         break;
-                    case "6":
+                    case "8":
                         Console.Write("Podaj ID zamówienia: ");
                         if (int.TryParse(Console.ReadLine(), out int orderId))
                         {
                             orderService.ShowOrderById(orderId);
                         }
                         break;
-                    case "7":
+                    case "9":
                         Console.WriteLine("Dodawanie zamówienia");
                         try
                         {
@@ -268,7 +307,7 @@ namespace AdventureWorks
                         }
 
                         break;
-                    case "8":
+                    case "10":
                         Console.Write("Podaj ID zamówienia do cofnięcia: ");
 
                         if (int.TryParse(Console.ReadLine(), out int orderToDelID))
@@ -294,14 +333,14 @@ namespace AdventureWorks
                         }
                             break;
                         break;
-                    case "9":
+                    case "11":
                         var report = orderRepo.GetSalesReportByCategory();
                         foreach (var item in report)
                         {
                             Console.WriteLine($"Kategoria: {item.Category} - Sprzedaż: {item.TotalSales:C}");
                         }
                         break;
-                    case "10":
+                    case "12":
                         Console.WriteLine("Koniec programu.");
                         return;
                     default:
